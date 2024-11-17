@@ -6,16 +6,16 @@ if (!isset($_SESSION['username'])) {
 }
 
 // Database connection
-$conn = new mysqli('73.214.12.104', 'billroot', 'mysql', 'dealership');
+$conn = new mysqli("73.214.12.104", "billroot", "mysql", "dealership");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Default table (e.g., 'suv') if none selected
-$table = isset($_GET['table']) ? $conn->real_escape_string($_GET['table']) : 'suv';
+// Default table (e.g., 'customer') if none selected
+$table = isset($_GET['table']) ? $conn->real_escape_string($_GET['table']) : 'customer';
 
 // Ensure table is valid
-$valid_tables = ['suv', 'truck', 'van', 'sedans', 'hatch', 'electric', 'coupe', 'crossover', 'convertable'];
+$valid_tables = ['customer', 'returncustomer', 'manager', 'employee'];
 if (!in_array($table, $valid_tables)) {
     die("Invalid table selected.");
 }
@@ -26,7 +26,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
     $delete_query = "DELETE FROM $table WHERE id$table = $id";
     if ($conn->query($delete_query)) {
         echo "Record deleted successfully.";
-        header("Location: dashboard.php?table=$table");
+        header("Location: personnel_dashboard.php?table=$table");
         exit();
     } else {
         echo "Error deleting record: " . $conn->error;
@@ -42,7 +42,7 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Inventory Dashboard</title>
+    <title>Personnel Management Dashboard</title>
     <style>
         table {
             width: 100%;
@@ -64,17 +64,16 @@ $result = $conn->query($sql);
     </style>
 </head>
 <body>
-    <h1>Welcome, <?php echo $_SESSION['username']; ?>!</h1>
-    <h2>Car Inventory Dashboard</h2>
+    <h1>Personnel Management Dashboard</h1>
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-        <a href="main_menu.php">Back to Main Menu</a> |
+        <a href="main_menu.php">Back to Main Menu</a> | 
         <a href="logout.php">Logout</a>
     </div>
 
     <!-- Dropdown to Select Table -->
-    <form method="GET" action="dashboard.php">
+    <form method="GET" action="personnel_dashboard.php">
         <label for="table">Select Table:</label>
         <select name="table" id="table" onchange="this.form.submit()">
             <?php foreach ($valid_tables as $valid_table): ?>
@@ -85,48 +84,39 @@ $result = $conn->query($sql);
         </select>
     </form>
 
-    <p><a href="add_car.php?category=<?php echo $table; ?>">Add New Car to <?php echo ucfirst($table); ?></a></p>
+    <p><a href="add_personnel.php?table=<?php echo $table; ?>">Add New Record</a></p>
 
     <!-- Display Table Data -->
     <table>
         <tr>
-            <th>ID</th>
-            <th>Make</th>
-            <th>Model</th>
-            <th>Year</th>
-            <th>Drivetrain</th>
-            <th>Transmission</th>
-            <th>Mileage</th>
-            <th>Engine</th>
-            <th>Condition</th>
-            <th>Color</th>
-            <th>VIN</th>
-            <th>Actions</th>
+            <?php
+            // Dynamically generate table headers
+            if ($result->num_rows > 0) {
+                $columns = array_keys($result->fetch_assoc());
+                foreach ($columns as $column) {
+                    echo "<th>" . ucfirst($column) . "</th>";
+                }
+                echo "<th>Actions</th>";
+                $result->data_seek(0); // Reset pointer for data fetch
+            }
+            ?>
         </tr>
         <?php if ($result->num_rows > 0): ?>
             <?php while ($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td><?php echo $row['id' . $table]; ?></td>
-                    <td><?php echo $row['make']; ?></td>
-                    <td><?php echo $row['model']; ?></td>
-                    <td><?php echo $row['year']; ?></td>
-                    <td><?php echo $row['drivetrain']; ?></td>
-                    <td><?php echo $row['transmission']; ?></td>
-                    <td><?php echo $row['mileage']; ?></td>
-                    <td><?php echo $row['engine']; ?></td>
-                    <td><?php echo $row['condition']; ?></td>
-                    <td><?php echo $row['color']; ?></td>
-                    <td><?php echo $row['vin']; ?></td>
+                    <?php foreach ($row as $key => $value): ?>
+                        <td><?php echo htmlspecialchars($value); ?></td>
+                    <?php endforeach; ?>
                     <td>
-                        <a href="edit_car.php?table=<?php echo $table; ?>&id=<?php echo $row['id' . $table]; ?>">Edit</a> |
-                        <a href="dashboard.php?table=<?php echo $table; ?>&id=<?php echo $row['id' . $table]; ?>&action=delete" 
-                           onclick="return confirm('Are you sure you want to delete this vehicle?');">Delete</a>
+                        <a href="edit_personnel.php?table=<?php echo $table; ?>&id=<?php echo $row['id' . $table]; ?>">Edit</a> |
+                        <a href="personnel_dashboard.php?table=<?php echo $table; ?>&id=<?php echo $row['id' . $table]; ?>&action=delete" 
+                           onclick="return confirm('Are you sure you want to delete this record?');">Delete</a>
                     </td>
                 </tr>
             <?php endwhile; ?>
         <?php else: ?>
             <tr>
-                <td colspan="12">No data found in <?php echo ucfirst($table); ?> table.</td>
+                <td colspan="100%">No data found in <?php echo ucfirst($table); ?> table.</td>
             </tr>
         <?php endif; ?>
     </table>

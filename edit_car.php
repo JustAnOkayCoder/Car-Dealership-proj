@@ -6,45 +6,62 @@ if (!isset($_SESSION['username'])) {
 }
 
 // Database connection
-$conn = new mysqli('localhost', 'root', '', 'used_car_lot');
+$conn = new mysqli("73.214.12.104", "billroot", "mysql", "dealership");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get the car ID and category from the URL
+// Validate table and id
+$table = isset($_GET['table']) ? $conn->real_escape_string($_GET['table']) : '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$category = isset($_GET['category']) ? $_GET['category'] : 'suv';
 
-// Fetch car details from the selected category table
-$sql = "SELECT * FROM $category WHERE id=$id";
-$result = $conn->query($sql);
-
-if ($result->num_rows == 1) {
-    $car = $result->fetch_assoc();
-} else {
-    echo "Car not found!";
-    exit();
+// Validate that the table exists
+$valid_tables = ['suv', 'truck', 'van', 'sedans', 'hatch', 'electric', 'coupe', 'crossover', 'convertable'];
+if (!in_array($table, $valid_tables) || $id <= 0) {
+    die("Invalid table or ID.");
 }
 
-// Check if form was submitted for updating the car
+// Fetch the existing record
+$sql = "SELECT * FROM $table WHERE id$table = $id";
+$result = $conn->query($sql);
+if ($result->num_rows != 1) {
+    die("Record not found.");
+}
+$row = $result->fetch_assoc();
+
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Collect and sanitize form inputs
     $make = $conn->real_escape_string($_POST['make']);
     $model = $conn->real_escape_string($_POST['model']);
     $year = (int)$_POST['year'];
-    $price = (float)$_POST['price'];
+    $drivetrain = $conn->real_escape_string($_POST['drivetrain']);
+    $transmission = $conn->real_escape_string($_POST['transmission']);
     $mileage = (int)$_POST['mileage'];
-    $status = $conn->real_escape_string($_POST['status']);
+    $engine = $conn->real_escape_string($_POST['engine']);
+    $condition = $conn->real_escape_string($_POST['condition']);
+    $color = $conn->real_escape_string($_POST['color']);
+    $vin = $conn->real_escape_string($_POST['vin']);
 
-    // Update car details in the database
-    $update_sql = "UPDATE $category 
-                   SET make='$make', model='$model', year=$year, price=$price, mileage=$mileage, status='$status' 
-                   WHERE id=$id";
+    // Update query with backticks for reserved keywords
+    $update_query = "UPDATE $table SET 
+                        make='$make', 
+                        model='$model', 
+                        year=$year, 
+                        drivetrain='$drivetrain', 
+                        transmission='$transmission', 
+                        mileage=$mileage, 
+                        engine='$engine', 
+                        `condition`='$condition', 
+                        color='$color', 
+                        vin='$vin' 
+                    WHERE id$table = $id";
 
-    if ($conn->query($update_sql)) {
-        echo "Car updated successfully!";
-        header("Location: dashboard.php?category=$category");
+    if ($conn->query($update_query)) {
+        header("Location: dashboard.php?table=$table");
+        exit();
     } else {
-        echo "Error: " . $conn->error;
+        echo "Error updating record: " . $conn->error;
     }
 }
 
@@ -59,31 +76,40 @@ $conn->close();
     <title>Edit Car</title>
 </head>
 <body>
-    <h2>Edit Car: <?php echo ucfirst($category); ?></h2>
-    <form action="edit_car.php?id=<?php echo $id; ?>&category=<?php echo $category; ?>" method="POST">
+    <h1>Edit Car</h1>
+    <form method="POST">
         <label for="make">Make:</label>
-        <input type="text" name="make" id="make" value="<?php echo $car['make']; ?>" required><br>
+        <input type="text" name="make" id="make" value="<?php echo htmlspecialchars($row['make']); ?>" required><br>
 
         <label for="model">Model:</label>
-        <input type="text" name="model" id="model" value="<?php echo $car['model']; ?>" required><br>
+        <input type="text" name="model" id="model" value="<?php echo htmlspecialchars($row['model']); ?>" required><br>
 
         <label for="year">Year:</label>
-        <input type="number" name="year" id="year" value="<?php echo $car['year']; ?>" required><br>
+        <input type="number" name="year" id="year" value="<?php echo htmlspecialchars($row['year']); ?>" required><br>
 
-        <label for="price">Price:</label>
-        <input type="number" step="0.01" name="price" id="price" value="<?php echo $car['price']; ?>" required><br>
+        <label for="drivetrain">Drivetrain:</label>
+        <input type="text" name="drivetrain" id="drivetrain" value="<?php echo htmlspecialchars($row['drivetrain']); ?>" required><br>
+
+        <label for="transmission">Transmission:</label>
+        <input type="text" name="transmission" id="transmission" value="<?php echo htmlspecialchars($row['transmission']); ?>" required><br>
 
         <label for="mileage">Mileage:</label>
-        <input type="number" name="mileage" id="mileage" value="<?php echo $car['mileage']; ?>" required><br>
+        <input type="number" name="mileage" id="mileage" value="<?php echo htmlspecialchars($row['mileage']); ?>" required><br>
 
-        <label for="status">Status:</label>
-        <select name="status" id="status">
-            <option value="Available" <?php if ($car['status'] == 'Available') echo 'selected'; ?>>Available</option>
-            <option value="Sold" <?php if ($car['status'] == 'Sold') echo 'selected'; ?>>Sold</option>
-        </select><br><br>
+        <label for="engine">Engine:</label>
+        <input type="text" name="engine" id="engine" value="<?php echo htmlspecialchars($row['engine']); ?>" required><br>
 
-        <input type="submit" value="Update Car">
+        <label for="condition">Condition:</label>
+        <input type="text" name="condition" id="condition" value="<?php echo htmlspecialchars($row['condition']); ?>" required><br>
+
+        <label for="color">Color:</label>
+        <input type="text" name="color" id="color" value="<?php echo htmlspecialchars($row['color']); ?>" required><br>
+
+        <label for="vin">VIN:</label>
+        <input type="text" name="vin" id="vin" value="<?php echo htmlspecialchars($row['vin']); ?>" required><br>
+
+        <button type="submit">Save Changes</button>
     </form>
-    <a href="dashboard.php?category=<?php echo $category; ?>">Back to Dashboard</a>
+    <a href="dashboard.php?table=<?php echo htmlspecialchars($table); ?>">Back to Dashboard</a>
 </body>
 </html>
