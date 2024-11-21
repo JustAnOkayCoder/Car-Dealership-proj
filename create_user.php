@@ -1,6 +1,6 @@
 <?php
 
-$conn = new mysqli('localhost', 'root', '', 'dbtitle');
+$conn= new mysqli('73.214.12.104', 'billroot', 'mysql', 'dealership');
 
 if ($conn->connect_error){
     die("Connection failed: " . $conn->connect_error);
@@ -12,7 +12,7 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
     //see if the user name already exist
-    $check_user_query ="SELECT * FROM users WHERE username='$username'";
+    $check_user_query ="SELECT * FROM login WHERE username='$username'";
     $result = $conn->query($check_user_query);
 
     if ($result->num_rows > 0){
@@ -20,11 +20,11 @@ if($_SERVER['REQUEST_METHOD'] =='POST'){
     }
     else{
         //make a new user
-        $insert_query = "INSERT INTO users (username, password) VALUES ('$username', '$password')";
+        $insert_query = "INSERT INTO login (username, password) VALUES ('$username', '$password')";
 
         if ($conn->query($insert_query)) {
             echo "User created successfully";
-            header("Location: index.html);")
+            header("Location: index.html");
         }
             else{
                 echo "Error: " . $conn->error;
