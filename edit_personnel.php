@@ -11,7 +11,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Validate table and ID
+// checks table id
 $table = isset($_GET['table']) ? $conn->real_escape_string($_GET['table']) : '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $valid_tables = ['customer', 'returncustomer', 'manager', 'employee'];
@@ -19,7 +19,7 @@ if (!in_array($table, $valid_tables) || $id <= 0) {
     die("Invalid table or ID.");
 }
 
-// Fetch record
+// gets record
 $sql = "SELECT * FROM $table WHERE id$table = $id";
 $result = $conn->query($sql);
 if ($result->num_rows != 1) {
@@ -27,7 +27,7 @@ if ($result->num_rows != 1) {
 }
 $row = $result->fetch_assoc();
 
-// Handle form submission
+// does submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $update_parts = [];
     foreach ($_POST as $column => $value) {
@@ -55,7 +55,7 @@ $conn->close();
 <body>
     <h1>Edit Record in <?php echo ucfirst($table); ?></h1>
     <form method="POST">
-        <!-- Dynamically Generate Input Fields -->
+        <!-- generate Input Fields -->
         <?php foreach ($row as $column => $value): ?>
             <label for="<?php echo $column; ?>"><?php echo ucfirst($column); ?>:</label>
             <input type="text" name="<?php echo $column; ?>" id="<?php echo $column; ?>" value="<?php echo htmlspecialchars($value); ?>" required><br>

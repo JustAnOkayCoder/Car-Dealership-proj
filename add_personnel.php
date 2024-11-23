@@ -11,14 +11,14 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Validate table
+
 $table = isset($_GET['table']) ? $conn->real_escape_string($_GET['table']) : '';
 $valid_tables = ['customer', 'returncustomer', 'manager', 'employee'];
 if (!in_array($table, $valid_tables)) {
     die("Invalid table selected.");
 }
 
-// Handle form submission
+// submits it
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $columns = array_keys($_POST);
     $values = array_map(function ($value) use ($conn) {
@@ -45,9 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <h1>Add New Record to <?php echo ucfirst($table); ?></h1>
     <form method="POST">
-        <!-- Dynamically Generate Input Fields -->
+        
         <?php
-        // Dynamically generate input fields based on table structure
+        // generate input fields based on table structure
         $result = $conn->query("DESCRIBE $table");
         if (!$result) {
             die("Error fetching table structure: " . $conn->error);

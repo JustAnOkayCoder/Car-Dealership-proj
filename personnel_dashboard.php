@@ -11,23 +11,23 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Default table (e.g., 'manager') if none selected
+// just loads a default table
 $table = isset($_GET['table']) ? $conn->real_escape_string($_GET['table']) : 'manager';
 
-// Ensure table is valid
+// does the table exist
 $valid_tables = ['manager', 'employee'];
 if (!in_array($table, $valid_tables)) {
     die("Invalid table selected.");
 }
 
-// Search and filter inputs
+// This is the search and filter items
 $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
 $filter_field = isset($_GET['filter_field']) ? $conn->real_escape_string($_GET['filter_field']) : '';
 $filter_value = isset($_GET['filter_value']) ? $conn->real_escape_string($_GET['filter_value']) : '';
 $hire_date_filter = isset($_GET['hire_date_filter']) ? $_GET['hire_date_filter'] : '';
 $hire_date = isset($_GET['hire_date']) ? $_GET['hire_date'] : '';
 
-// Handle delete operation
+// this is the delete section
 if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $delete_query = "DELETE FROM $table WHERE id$table = $id";
@@ -40,7 +40,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
     }
 }
 
-// Build SQL query with search and filters
+// the query for the search filters
 $sql = "SELECT * FROM $table WHERE 1=1";
 if (!empty($search)) {
     $sql .= " AND (fname LIKE '%$search%' OR lname LIKE '%$search%' OR position LIKE '%$search%' OR hiredate LIKE '%$search%')";
@@ -56,7 +56,7 @@ if (!empty($hire_date_filter) && !empty($hire_date)) {
     }
 }
 
-// Execute query
+// does the query
 $result = $conn->query($sql);
 ?>
 <!DOCTYPE html>
@@ -88,13 +88,13 @@ $result = $conn->query($sql);
 <body>
     <h1>Personnel Management Dashboard</h1>
 
-    <!-- Action Buttons -->
+    <!-- logout buttons -->
     <div class="action-buttons">
         <a href="main_menu.php">Back to Main Menu</a> | 
         <a href="logout.php">Logout</a>
     </div>
 
-    <!-- Dropdown to Select Table -->
+    <!-- drop down for the tables -->
     <form method="GET" action="personnel_dashboard.php">
         <label for="table">Select Table:</label>
         <select name="table" id="table" onchange="this.form.submit()">
@@ -106,7 +106,7 @@ $result = $conn->query($sql);
         </select>
     </form>
 
-    <!-- Search and Filter Form -->
+    <!-- search and filter on the page -->
     <div class="search-filter">
         <form method="GET" action="personnel_dashboard.php">
             <input type="hidden" name="table" value="<?php echo $table; ?>">
@@ -144,18 +144,18 @@ $result = $conn->query($sql);
 
     <p><a href="add_personnel.php?table=<?php echo $table; ?>">Add New Record to <?php echo ucfirst($table); ?></a></p>
 
-    <!-- Display Table Data -->
+    <!-- shows the table -->
     <table>
         <tr>
             <?php
-            // Dynamically generate table headers
+            
             if ($result->num_rows > 0) {
                 $columns = array_keys($result->fetch_assoc());
                 foreach ($columns as $column) {
                     echo "<th>" . ucfirst($column) . "</th>";
                 }
                 echo "<th>Actions</th>";
-                $result->data_seek(0); // Reset pointer for data fetch
+                $result->data_seek(0); 
             }
             ?>
         </tr>

@@ -11,17 +11,17 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Validate table and id
+//  table and id
 $table = isset($_GET['table']) ? $conn->real_escape_string($_GET['table']) : '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Validate that the table exists
+// the table exists
 $valid_tables = ['suv', 'truck', 'van', 'sedans', 'hatch', 'electric', 'coupe', 'crossover', 'convertable'];
 if (!in_array($table, $valid_tables) || $id <= 0) {
     die("Invalid table or ID.");
 }
 
-// Fetch the existing record
+// get the existing record
 $sql = "SELECT * FROM $table WHERE id$table = $id";
 $result = $conn->query($sql);
 if ($result->num_rows != 1) {
@@ -29,9 +29,9 @@ if ($result->num_rows != 1) {
 }
 $row = $result->fetch_assoc();
 
-// Handle form submission
+// doesa the form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Collect and sanitize form inputs
+    
     $make = $conn->real_escape_string($_POST['make']);
     $model = $conn->real_escape_string($_POST['model']);
     $year = (int)$_POST['year'];
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $color = $conn->real_escape_string($_POST['color']);
     $vin = $conn->real_escape_string($_POST['vin']);
 
-    // Update query with backticks for reserved keywords
+    // just updates the query
     $update_query = "UPDATE $table SET 
                         make='$make', 
                         model='$model', 

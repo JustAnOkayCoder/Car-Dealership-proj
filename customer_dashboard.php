@@ -11,21 +11,21 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Default table (e.g., 'customer') if none selected
+// Default table 
 $table = isset($_GET['table']) ? $conn->real_escape_string($_GET['table']) : 'customer';
 
-// Ensure table is valid
+// is table valid
 $valid_tables = ['customer', 'returncustomer'];
 if (!in_array($table, $valid_tables)) {
     die("Invalid table selected.");
 }
 
-// Search and filter inputs
+// search and filter stuff
 $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
 $filter_field = isset($_GET['filter_field']) ? $conn->real_escape_string($_GET['filter_field']) : '';
 $filter_value = isset($_GET['filter_value']) ? $conn->real_escape_string($_GET['filter_value']) : '';
 
-// Handle delete operation
+//  delete stuff
 if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $delete_query = "DELETE FROM $table WHERE id$table = $id";
@@ -38,7 +38,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
     }
 }
 
-// Build SQL query with search and filter
+// SQL query with search and filter
 $sql = "SELECT * FROM $table WHERE 1=1";
 if (!empty($search)) {
     $sql .= " AND (fname LIKE '%$search%' OR lname LIKE '%$search%' OR email LIKE '%$search%' OR phone LIKE '%$search%')";
@@ -47,7 +47,7 @@ if (!empty($filter_field) && !empty($filter_value)) {
     $sql .= " AND $filter_field = '$filter_value'";
 }
 
-// Execute query
+// does query
 $result = $conn->query($sql);
 ?>
 <!DOCTYPE html>
@@ -85,7 +85,7 @@ $result = $conn->query($sql);
         <a href="logout.php">Logout</a>
     </div>
 
-    <!-- Dropdown to Select Table -->
+    <!-- drop down for tables -->
     <form method="GET" action="customer_dashboard.php">
         <label for="table">Select Table:</label>
         <select name="table" id="table" onchange="this.form.submit()">
@@ -97,7 +97,7 @@ $result = $conn->query($sql);
         </select>
     </form>
 
-    <!-- Search and Filter Form -->
+    <!-- search and filter -->
     <div class="search-filter">
         <form method="GET" action="customer_dashboard.php">
             <input type="hidden" name="table" value="<?php echo $table; ?>">
@@ -117,20 +117,19 @@ $result = $conn->query($sql);
             <input type="text" name="filter_value" id="filter_value" value="<?php echo $filter_value; ?>">
 
             <button type="submit">Apply</button>
-			<a href="customer_dashboard.php?table=<?php echo $table; ?>">
-            <button type="button">Reset</button>
-        </a>
-
+            <a href="customer_dashboard.php?table=<?php echo $table; ?>">
+                <button type="button">Reset</button>
+            </a>
         </form>
     </div>
 
-    <p><a href="add_customer.php?table=<?php echo $table; ?>">Add New Record to <?php echo ucfirst($table); ?></a></p>
+    <p><a href="add_edit_customer.php?action=add&table=<?php echo $table; ?>">Add New Record to <?php echo ucfirst($table); ?></a></p>
 
     <!-- Display Table Data -->
     <table>
         <tr>
             <?php
-            // Dynamically generate table headers
+            // generate table headers
             if ($result->num_rows > 0) {
                 $columns = array_keys($result->fetch_assoc());
                 foreach ($columns as $column) {
@@ -148,7 +147,7 @@ $result = $conn->query($sql);
                         <td><?php echo htmlspecialchars($value); ?></td>
                     <?php endforeach; ?>
                     <td>
-                        <a href="edit_customer.php?table=<?php echo $table; ?>&id=<?php echo $row['id' . $table]; ?>">Edit</a> |
+                        <a href="add_edit_customer.php?action=edit&table=<?php echo $table; ?>&id=<?php echo $row['id' . $table]; ?>">Edit</a> |
                         <a href="customer_dashboard.php?table=<?php echo $table; ?>&id=<?php echo $row['id' . $table]; ?>&action=delete" 
                            onclick="return confirm('Are you sure you want to delete this record?');">Delete</a>
                     </td>

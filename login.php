@@ -12,14 +12,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $conn->real_escape_string($_POST['username']);
     $password = $_POST['password'];
 
-    // Query to check if the user exists
+    // does the user exist
     $check_user_query = "SELECT * FROM login WHERE username='$username'";
     $result = $conn->query($check_user_query);
 
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
 
-        // Verify password
+        // checks the password
         if (password_verify($password, $user['password'])) {
             $_SESSION['username'] = $user['username']; // Store username in session
             header("Location: main_menu.php"); // Redirect to main menu
