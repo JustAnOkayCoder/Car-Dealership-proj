@@ -19,6 +19,7 @@ if (!isset($_SESSION['username'])) {
         <h2>Main Menu</h2>
         <ul>
             <li><a href="dashboard.php">Car Management</a></li>
+			<li><a href="customer_dashboard.php">Customer Management</a></li>
             <li><a href="personnel_dashboard.php">Personnel Management</a></li>
         </ul>
         <p><a href="logout.php">Logout</a></p>
