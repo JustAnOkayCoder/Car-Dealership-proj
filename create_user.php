@@ -1,6 +1,6 @@
 <?php
 
-$conn= new mysqli('73.214.12.104', 'billroot', 'mysql', 'dealership');
+$conn= new mysqli();
 
 if ($conn->connect_error){
     die("Connection failed: " . $conn->connect_error);
